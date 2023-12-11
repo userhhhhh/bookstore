@@ -30,4 +30,5 @@ int main(){
             blockchain.Find(index);
         }
     }
+    return 0;
 }

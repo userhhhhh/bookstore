@@ -79,7 +79,8 @@ void BlockChain::Insert(Element &e){
     // 下面二分查找最后一个<=该元素的元素下标
     // 首先不可能有相等元素
     // while循环结束后，l的值就是我们要找的
-    int l=0,r=n1.size-1;
+    int l=0,r=n1.size;
+    //错误：这里r=n1.size,因为左开右闭
     while(l<r){
         int mid=(l+r+1)/2;
         if(n1.a[mid]<e) {l=mid;}
@@ -138,7 +139,7 @@ void BlockChain::Delete(Element &e){
     // 下面二分查找最后一个<=该元素的元素下标
     // 首先不可能有相等元素,所以只要查找到了，就只有这一个元素
     // while循环结束后，l的值就是我们要找的
-    int l=0,r=n1.size-1;
+    int l=0,r=n1.size;
     while(l<r){
         int mid=(l+r+1)/2;
         if(n1.a[mid]<e) l=mid;
@@ -211,7 +212,7 @@ void BlockChain::Find(std::string& str){
     // 下面二分查找最后一个<=该元素的元素下标
     // 首先不可能有相等元素,所以只要查找到了，就只有这一个元素
     // while循环结束后，l的值就是我们要找的
-    int l=0,r=n1.size-1;
+    int l=0,r=n1.size;
     while(l<r){
         int mid=(l+r+1)/2;
         if(n1.a[mid]<e2) {l=mid;}
