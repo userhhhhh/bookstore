@@ -90,7 +90,7 @@ public:
 //备注：参考了codemate
 
 
-int main() {
-    ofstream os("a.txt");
-    return 0;
-}
+//int main() {
+//    ofstream os("a.txt");
+//    return 0;
+//}

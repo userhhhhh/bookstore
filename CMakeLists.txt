@@ -4,7 +4,7 @@ project(code)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(code
-        src/1336.cpp
         src/blockchain.h
         src/blockchain.cpp
+        src/main.cpp
 )
