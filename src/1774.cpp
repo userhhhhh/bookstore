@@ -184,7 +184,7 @@ void BlockChain::Insert(Element &e) {
     // c.元素在中间
     // 下面二分查找最后一个<=该元素的元素下标
     // 首先不可能有相等元素，while循环结束后，l的值就是我们要找的
-    int l = 0, r = n1.size;//错误：这里 r = n1.size,因为左开右闭
+    int l = 0, r = n1.size-1;//错误：这里 r = n1.size-1
     while (l < r) {
         int mid = (l + r + 1) / 2;
         if (n1.a[mid] < e && mid <= n1.size - 1) { l = mid; }
@@ -225,7 +225,7 @@ void BlockChain::Delete(Element &e) {
     // 下面二分查找最后一个<=该元素的元素下标
     // 有两种情况：(1)没有相等元素 (2)查找到了且就只有这一个元素
     // while循环结束后，l的值就是我们要找的
-    int l = 0, r = n1.size;
+    int l = 0, r = n1.size-1;
     // 不确定：假如这一块为1，然后删掉里面元素，然后怎么操作
     // 这一块为1只有可能它是最后一块
     if(n1.size==1){
@@ -238,6 +238,7 @@ void BlockChain::Delete(Element &e) {
             std::ofstream file2(file_name_index, std::ios::trunc);
             file2.close();
             file_index.open(file_name_index);
+            return;//错误：要return
         }else if(e==n1.a[0] && in.pos!=0){
             //不确定：这里是不是还要维护一个prev
             //这一块直接扔掉，不管它了，因为这样操作的可能性很小
@@ -249,6 +250,7 @@ void BlockChain::Delete(Element &e) {
             if(in.pos==tail){
                 tail=tmp3.pos;
             }
+            return;
         }else{
             // std::cout << "null" << std::endl;
             return;
@@ -344,7 +346,7 @@ void BlockChain::Find(std::string &str) {
         else{std::cout << "null" << std::endl;}
         return;
     }
-    int l = 0, r = n1.size;
+    int l = 0, r = n1.size-1;
     while (l < r) {
         int mid = (l + r) / 2;
         if (n1.a[mid] > e_find || n1.a[mid]==e_find) { r = mid; }
@@ -498,6 +500,12 @@ int main() {
             std::string index;
             int value;
             std::cin >> index >> value;
+            if(index=="b" && value==1){
+                Element e1(index);
+                e1.value = value;
+                blockchain.Delete(e1);
+                continue;
+            }
             Element e(index);
             e.value = value;
             blockchain.Delete(e);
