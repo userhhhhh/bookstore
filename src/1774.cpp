@@ -215,7 +215,7 @@ void BlockChain::Delete(Element &e) {
     //现在已经找到了所在的block
     //现在状态有两种：(1)e<=e_high (2)e>in.high && tail
     if(e > in.high){
-        std::cout << "null" << std::endl;
+        // std::cout << "null" << std::endl;
         return;
     }
     //现在必有：e<=e_high
@@ -250,7 +250,7 @@ void BlockChain::Delete(Element &e) {
                 tail=tmp3.pos;
             }
         }else{
-            std::cout << "null" << std::endl;
+            // std::cout << "null" << std::endl;
             return;
         }
     }
@@ -269,7 +269,7 @@ void BlockChain::Delete(Element &e) {
         writeNode(n1, in.pos);
         writeNodeIndex(in,in.pos_index);
     } else {
-        std::cout << "null" << std::endl;
+        // std::cout << "null" << std::endl;
         return;
     }
     //下面是并块或者借块操作
@@ -335,7 +335,7 @@ void BlockChain::Find(std::string &str) {
     NODE n1;
     file.seekg(in.pos, std::ios::beg);
     file.read(reinterpret_cast<char *>(&n1), sizeofnode);//将整个NODE读出来
-    // 下面二分查找最后一个<=该元素的元素下标
+    // 下面二分查找第一个>=该元素的元素下标
     // while循环结束后，l的值就是我们要找的
     if(n1.size==1){
         if(std::strcmp(n1.a[0].index, e_find.index) == 0){
@@ -346,9 +346,9 @@ void BlockChain::Find(std::string &str) {
     }
     int l = 0, r = n1.size;
     while (l < r) {
-        int mid = (l + r + 1) / 2;
-        if (n1.a[mid] < e_find || n1.a[mid]==e_find) { l = mid; }
-        else { r = mid - 1; }
+        int mid = (l + r) / 2;
+        if (n1.a[mid] > e_find || n1.a[mid]==e_find) { r = mid; }
+        else { l = mid+1; }
     }
     bool exist = false;
     if (std::strcmp(n1.a[l].index, e_find.index) == 0) {
@@ -357,20 +357,24 @@ void BlockChain::Find(std::string &str) {
     }
     l++;
     //下面开始往后找，一直找到index不同为止
+    //当前读到的块是 n1，对应的索引是 tmp1
+    //错误：tmp1要跟着变
+    NODE_INDEX itmp;
+    file_index.seekg(in.pos_index);
+    file_index.read(reinterpret_cast<char*>(&itmp),sizeofindex);
     while (true) {
         while (std::strcmp(n1.a[l].index, e_find.index) == 0 && l <= n1.size - 1) {
-            l++;
             std::cout << n1.a[l].value << ' ';
+            l++;//错误：l++写在cout下面
             exist = true;
         }
-        if (l == n1.size && in.pos != tail) {//确保后面有节点
+        if (l == n1.size && itmp.pos != tail) {//确保后面有节点
             l = 0;
-            file_index.seekg(in.next_index);
+            file_index.seekp(itmp.next_index);
             int tmp = file_index.tellp();//读出n1的下一块的位置
-            NODE_INDEX tmp1;
             file_index.seekg(tmp);
-            file_index.read(reinterpret_cast<char*>(&tmp1),sizeofindex);
-            file.seekg(tmp1.pos);
+            file_index.read(reinterpret_cast<char*>(&itmp),sizeofindex);
+            file.seekg(itmp.pos);
             file.read(reinterpret_cast<char *>(&n1), sizeofnode);
         } else break;
     }
@@ -397,7 +401,8 @@ void BlockChain::split(NODE &n1,NODE_INDEX &in1){
     for (int i = (MAX_SIZE / 2); i <= MAX_SIZE - 1; ++i) {
         n2.a[i - MAX_SIZE / 2] = n1.a[i];
     }
-    n2.size = MAX_SIZE / 2;
+    //错误：MAX_SIZE-MAX_SIZE / 2，不是 MAX_SIZE / 2;
+    n2.size = MAX_SIZE-MAX_SIZE / 2;
     file.seekp(0,std::ios::end);
     int tmp1=file.tellp();
     writeNode(n2, tmp1);
@@ -474,7 +479,7 @@ void BlockChain::borrow(NODE &n1,NODE_INDEX &in1,NODE &n2,NODE_INDEX &in2) {
 }
 
 int main() {
-    freopen("../src/1.in", "r", stdin);
+//      freopen("../src/1.in", "r", stdin);
     // b.txt用来存所有数据，a.txt用来存每个节点的最大元素
     BlockChain blockchain("b.txt","a.txt");
     int command_count;
@@ -499,6 +504,10 @@ int main() {
         } else if (command == "find") {
             std::string index;
             std::cin >> index;
+            if(index=="Dune"){
+                blockchain.Find(index);
+                continue;
+            }
             blockchain.Find(index);
         }
     }
