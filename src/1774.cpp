@@ -69,6 +69,7 @@ const int sizeofnode = sizeof(NODE);
 const int sizeofelement = sizeof(Element);
 const int sizeofindex=sizeof(NODE_INDEX);
 
+
 Element::Element(std::string str) {
     std::copy(str.begin(), str.end(), index);
 }
@@ -120,14 +121,17 @@ void BlockChain::Insert(Element &e) {
     //在一开始如果文件为空没有block，先创建一个新的block块
     //检查文件为空：如果为空，那就建立一个block
     file.seekp(0,std::ios::end);
+    file_index.seekp(0,std::ios::end);
+    int last1=file_index.tellp();
     int last=file.tellp();
-    if (!last) {
+    if ((!last) && (!last1)) {
         NODE n;
         n.a[0] = e; 
         n.size = 1;
         NODE_INDEX in;
         in.last_index = -1;//作为头节点
         in.next_index = -1;//不确定3：这里next没写？
+        in.pos_index=0;
         in.pos=0;
         in.low = e;
         in.high = e;
@@ -205,6 +209,11 @@ void BlockChain::Insert(Element &e) {
 }
 
 void BlockChain::Delete(Element &e) {
+    //错误：防止下面读入为空
+    file_index.seekp(0,std::ios::end);
+    int test=file_index.tellp();
+    if(!test){return;}
+
     NODE_INDEX in;
     file_index.seekg(0, std::ios::beg);
     file_index.read(reinterpret_cast<char *>(&in), sizeofindex);
@@ -319,6 +328,14 @@ void BlockChain::Delete(Element &e) {
 
 void BlockChain::Find(std::string &str) {
     //构造一个Element变量e_find，它的value为int最小值
+
+    //问题：先判断一下是否为空，防止后面file_index.read读入为空
+    file_index.seekp(0,std::ios::end);
+    int test_empty=file_index.tellp();
+    if(test_empty==0){
+        std::cout<<"null"<<std::endl;
+        return;//注意不能漏掉 return
+    }
     Element e_find(str);
     e_find.value = std::numeric_limits<int>::min();
     NODE_INDEX in;
@@ -450,6 +467,7 @@ void BlockChain::merge(NODE &n1,NODE_INDEX &in1,NODE &n2,NODE_INDEX&in2) {
     in1.next_index = in2.next_index;
     writeNode(n1, in1.pos);
     writeNodeIndex(in1,in1.pos_index);
+    if(in2.pos==tail) tail=in1.pos;//错误：这一句只能放这里，不能放下面
     if(in1.next_index==-1) return;
     else{
         file_index.seekg(in1.next_index);
@@ -458,7 +476,6 @@ void BlockChain::merge(NODE &n1,NODE_INDEX &in1,NODE &n2,NODE_INDEX&in2) {
         tmp.last_index=in1.pos_index;
         file_index.write(reinterpret_cast<char*>(&tmp), sizeofindex);
     }
-    if(in2.pos==tail) tail=in1.pos;
 }
 
 //表示n1从n2里借
@@ -481,7 +498,8 @@ void BlockChain::borrow(NODE &n1,NODE_INDEX &in1,NODE &n2,NODE_INDEX &in2) {
 }
 
 int main() {
-//      freopen("../src/1.in", "r", stdin);
+    // freopen("0.in", "r", stdin);
+    // freopen("wrong.out","w",stdout);
     // b.txt用来存所有数据，a.txt用来存每个节点的最大元素
     BlockChain blockchain("b.txt","a.txt");
     int command_count;
@@ -493,6 +511,12 @@ int main() {
             std::string index;
             int value;
             std::cin >> index >> value;
+            if(index=="a" && value==100){
+                Element element(index);
+                element.value = value;
+                blockchain.Insert(element);
+                continue;
+            }
             Element element(index);
             element.value = value;
             blockchain.Insert(element);
@@ -500,22 +524,12 @@ int main() {
             std::string index;
             int value;
             std::cin >> index >> value;
-            if(index=="b" && value==1){
-                Element e1(index);
-                e1.value = value;
-                blockchain.Delete(e1);
-                continue;
-            }
             Element e(index);
             e.value = value;
             blockchain.Delete(e);
         } else if (command == "find") {
             std::string index;
             std::cin >> index;
-            if(index=="Dune"){
-                blockchain.Find(index);
-                continue;
-            }
             blockchain.Find(index);
         }
     }
