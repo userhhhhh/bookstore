@@ -2,7 +2,7 @@
 #define CODE_BLOCKCHAIN_H
 #include <bits/stdc++.h>
 
-const int NUM = 1010;
+const int NUM = 6010;
 
 //节点中的元素
 #pragma pack(push,1)  //不确定1
@@ -43,11 +43,13 @@ private:
     std::string file_name;
     std::fstream file_index;
     std::string file_name_index;
+    std::fstream file_tail;
+    std::string file_name_tail;
 public:
     bool flag = false;
     int tail = 0; //表示在b.txt中最后一个块的块头
 
-    BlockChain(std::string,std::string);
+    BlockChain(std::string,std::string,std::string );
     BlockChain() = default;
     ~BlockChain();
     void Insert(Element &);
@@ -63,8 +65,8 @@ public:
 
 #endif //CODE_BLOCKCHAIN_H
 
-const int MAX_SIZE = 1000;
-const int MIN_SIZE = 400;
+const int MAX_SIZE = 6000;
+const int MIN_SIZE = 2500;
 const int sizeofnode = sizeof(NODE);
 const int sizeofelement = sizeof(Element);
 const int sizeofindex=sizeof(NODE_INDEX);
@@ -94,8 +96,8 @@ bool Element::operator>(const Element &e2) const {
     return true;
 }
 
-BlockChain::BlockChain(std::string file_name,std::string file_name_index) 
-    : file_name(file_name),file_name_index(file_name_index) {
+BlockChain::BlockChain(std::string file_name,std::string file_name_index,std::string file_name_tail)
+    : file_name(file_name),file_name_index(file_name_index),file_tail(file_name_tail) {
     //打开NODE的文件b.txt
     file.open(file_name);
     if (!file.good()) {
@@ -110,11 +112,28 @@ BlockChain::BlockChain(std::string file_name,std::string file_name_index)
         file_index.close();
         file_index.open(file_name_index);
     }
+    //打开存放tail的文件c.txt,将tail的值读到现在的tail里面去
+    file_tail.open(file_name_tail);
+    if (!file_tail.good()) {
+        file_tail.open(file_name_tail, std::ios::out);
+        file_tail.close();
+        file_tail.open(file_name_tail);
+    }
+    file_tail.seekp(0,std::ios::end);
+    int test=file_tail.tellp();
+    if(test==0){
+        tail=0;
+        file_tail.write(reinterpret_cast<char*>(&tail),sizeof(int));
+    }else{
+        file_tail.seekg(0);
+        file_tail.read(reinterpret_cast<char*>(&tail),sizeof(int));
+    }
 }
 
 BlockChain::~BlockChain() {
     if (file.is_open()) file.close();
     if (file_index.is_open()) file_index.close();
+    if (file_tail.is_open()) file_tail.close();
 }
 
 void BlockChain::Insert(Element &e) {
@@ -138,6 +157,8 @@ void BlockChain::Insert(Element &e) {
         writeNode(n, 0);
         writeNodeIndex(in,0);
         tail = 0;
+        file_tail.seekp(0);
+        file_tail.write(reinterpret_cast<char*>(&tail),sizeof(int));
         return;
     }
     //下面是已经创建好block的情况
@@ -258,6 +279,8 @@ void BlockChain::Delete(Element &e) {
             writeNodeIndex(tmp3,tmp3.pos_index);
             if(in.pos==tail){
                 tail=tmp3.pos;
+                file_tail.seekp(0);
+                file_tail.write(reinterpret_cast<char*>(&tail),sizeof(int));
             }
             return;
         }else{
@@ -296,7 +319,11 @@ void BlockChain::Delete(Element &e) {
         //现在in4是下一块的索引,n2是下一块节点
         if (n2.size + n1.size <= MAX_SIZE){
             merge(n1,in,n2,in4);
-            if (tail == in4.pos) {tail = 0;}
+            if (tail == in4.pos) {
+                tail = 0;
+                file_tail.seekp(0);
+                file_tail.write(reinterpret_cast<char*>(&tail),sizeof(int));
+            }
         } else {borrow(n1,in,n2,in4);}
     } else if (in.pos == tail) {//尾节点
         if (tail == 0) return;//确保前面有节点
@@ -310,6 +337,8 @@ void BlockChain::Delete(Element &e) {
         if (n2.size + n1.size <= MAX_SIZE) {
             merge(n2,in4,n1,in);
             tail = in4.pos;
+            file_tail.seekp(0);
+            file_tail.write(reinterpret_cast<char*>(&tail),sizeof(int));
         } else borrow(n1,in,n2,in4);
     } else { //中间节点
         NODE_INDEX in4;
@@ -454,6 +483,8 @@ void BlockChain::split(NODE &n1,NODE_INDEX &in1){
     //tail处理
     if(in1.pos==tail){
         tail = in2.pos;
+        file_tail.seekp(0);
+        file_tail.write(reinterpret_cast<char*>(&tail),sizeof(int));
     }
 }
 
@@ -467,7 +498,11 @@ void BlockChain::merge(NODE &n1,NODE_INDEX &in1,NODE &n2,NODE_INDEX&in2) {
     in1.next_index = in2.next_index;
     writeNode(n1, in1.pos);
     writeNodeIndex(in1,in1.pos_index);
-    if(in2.pos==tail) tail=in1.pos;//错误：这一句只能放这里，不能放下面
+    if(in2.pos==tail) {//错误：这一句只能放这里，不能放下面
+        tail=in1.pos;
+        file_tail.seekp(0);
+        file_tail.write(reinterpret_cast<char*>(&tail),sizeof(int));
+    }
     if(in1.next_index==-1) return;
     else{
         file_index.seekg(in1.next_index);
@@ -501,7 +536,7 @@ int main() {
     // freopen("0.in", "r", stdin);
     // freopen("wrong.out","w",stdout);
     // b.txt用来存所有数据，a.txt用来存每个节点的最大元素
-    BlockChain blockchain("b.txt","a.txt");
+    BlockChain blockchain("b.txt","a.txt","c.txt");
     int command_count;
     std::cin >> command_count;
     for (int i = 0; i < command_count; ++i) {
