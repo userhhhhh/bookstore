@@ -23,13 +23,17 @@ bool isValidInt(std::string& str){
 }
 
 int main(){
+
+//   freopen("/home/hqs123/bookstore/src/test/basic/testcase3.in","r",stdin);
+//   freopen("0.out","w",stdout);
+
     Booksystem booksystem("isbn_data","isbn_index","isbn_tail",
                         "name_data","name_index","name_tail",
                         "author_data","author_index","author_tail",
-                        "keyword_data","keyword_index","keyword_tail");
-    Usersystem usersystem;
+                        "keyword_data","keyword_index","keyword_tail","book");
+    Usersystem usersystem("user","user_data","user_index","user_tail");
     Finance finance("finance");
-    
+
     std::string input_string;
     while(std::getline(std::cin,input_string)){
         bool result = std::all_of(input_string.begin(), input_string.end(), [](char c) { return c == ' '; });
@@ -37,7 +41,7 @@ int main(){
         std::istringstream iss(input_string);
         std::string command;
         iss>>command;
-        if(iss.fail()) {std::cout<<"Invalid\n";continue;}
+        // if(iss.fail()) {std::cout<<"Invalid\n";continue;}
         std::vector<std::string> v;
         std::string word;
         while (iss >> word){
@@ -85,9 +89,24 @@ int main(){
                 finance.Show(count);
             }
             else if(v.size()==0){
-                //不会？
+                std::fstream inputFile("book");
+                std::vector<Book> books;
+                while(inputFile.peek() != EOF){
+                    Book book;
+                    inputFile.read(reinterpret_cast<char*>(&book),sizeof(Book));
+                    books.push_back(book);
+                }
+                inputFile.close();
+                std::sort(books.begin(), books.end());
+                for(int i=0;i<books.size();++i){
+                    std::cout<<books[i].isbn<<'\t'<<books[i].BookName<<'\t'<<books[i].Author
+                    <<'\t'<<books[i].Keyword<<'\t'<<books[i].price<<'\t'<<books[i].rest<<'\n';
+                }
             }
             else if(v.size()==1 && v[0]!="finance"){
+                // 不确定：附加参数内容为空则操作失败？
+                // 不确定：[Keyword] 中出现多个关键词则操作失败？
+
                 int pos=v[0].find("=");
                 if(pos==std::string::npos) {std::cout<<"Invalid\n";continue;}
                 std::string s1=v[0].substr(0,pos);
@@ -102,8 +121,15 @@ int main(){
         }
         else if(command=="buy"){
             if(v.size()==2){
+                if(!isValidInt(v[1])) {std::cout<<"Invalid\n";continue;}
                 int tmp=std::stoi(v[1]);
-                booksystem.buy(v[0],tmp);
+                double result=booksystem.buy(v[0],tmp);
+                if(result!=0.0){
+                    Once once;
+                    once.flag=true;
+                    once.money=result;
+                    finance.Insert(once);
+                }
             }
             else {std::cout<<"Invalid\n";continue;}
         }
@@ -112,24 +138,71 @@ int main(){
             else {std::cout<<"Invalid\n";continue;}
         }
         else if(command=="modify"){
-            //问题：这里失败怎么输出？
+            // 不确定：附加参数内容为空则操作失败
+            // 不确定：[keyword] 包含重复信息段则操作失败
+
+            std::string already_have[5]={"","","","",""};
+            //上面的5个元素分别代表ISBN、name、author、keyword、price
+            bool flag=true;
             for(int i=0;i<v.size();++i){           
                 int pos=v[i].find("=");
-                if(pos==std::string::npos) {std::cout<<"Invalid\n";continue;}
+                if(pos==std::string::npos) {std::cout<<"Invalid\n";flag=false;break;}
                 std::string s1=v[i].substr(0,pos);
                 std::string s2=v[i].substr(pos+1);
-                if(s1=="-ISBN"){booksystem.modify_isbn(usersystem,s2);}
-                else if(s1=="-name"){booksystem.modify_name(usersystem,s2);}
-                else if(s1=="-author"){booksystem.modify_author(usersystem,s2);}
-                else if(s1=="-keyword"){booksystem.modify_keyword(usersystem,s2);}
-                else {std::cout<<"Invalid\n";continue;}
+                if(s1=="-ISBN"){
+                    if(already_have[0]=="") {already_have[0]=s2;}
+                    else{std::cout<<"Invalid\n";flag=false;break;}
+                }
+                else if(s1=="-name"){
+                    if(already_have[1]=="") {already_have[1]=s2;}
+                    else{std::cout<<"Invalid\n";flag=false;break;}          
+                }
+                else if(s1=="-author"){
+                    if(already_have[2]=="") {already_have[2]=s2;}
+                    else{std::cout<<"Invalid\n";flag=false;break;}
+                }
+                else if(s1=="-keyword"){
+                    if(already_have[3]=="") {already_have[3]=s2;}
+                    else{std::cout<<"Invalid\n";flag=false;break;}
+                }
+                else if(s1=="-price"){
+                    if(isValidFloat(s2)){
+                        if(already_have[1]=="") {already_have[1]=s2;}
+                        else{std::cout<<"Invalid\n";flag=false;break;}
+                    }
+                    else{std::cout<<"Invalid\n";flag=false;break;}
+                }
+                else {std::cout<<"Invalid\n";flag=false;break;}
             }
+            if(!flag){continue;}
+            int tmp = usersystem.login_now_select.back();//当前选中的书的索引
+            if(tmp==-1) {std::cout<<"Invalid\n";continue;}
+            Book tmp1;
+            booksystem.file_book.seekg(tmp);
+            booksystem.file_book.read(reinterpret_cast<char*>(&tmp1),sizeof(Book));
+            if(already_have[0]!=""){
+                char exchange[33]={'\0'};
+                std::copy(already_have[0].begin(),already_have[0].end(),exchange);
+                if(std::strcmp(tmp1.isbn,exchange)==0){std::cout<<"Invalid\n";continue;}
+                std::copy(already_have[0].begin(),already_have[0].end(),tmp1.isbn);
+            }
+            if(already_have[1]!=""){std::copy(already_have[1].begin(),already_have[1].end(),tmp1.BookName);}
+            if(already_have[2]!=""){std::copy(already_have[2].begin(),already_have[2].end(),tmp1.Author);}
+            if(already_have[3]!=""){std::copy(already_have[3].begin(),already_have[3].end(),tmp1.Keyword);}
+            if(already_have[4]!=""){double num=std::stod(already_have[4]);tmp1.price=num;}
+            booksystem.file_book.seekp(tmp);
+            booksystem.file_book.write(reinterpret_cast<char*>(&tmp1),sizeof(Book));
         }
         else if(command=="import"){
             if(v.size()==2 && isValidInt(v[0]) && isValidFloat(v[1])){
                 int tmp1 = std::stoi(v[0]);
                 double tmp2 = std::stod(v[1]);
-                booksystem.import(usersystem,tmp1,tmp2);
+                if(booksystem.import(usersystem,tmp1,tmp2)){
+                    Once once;
+                    once.flag=false;
+                    once.money = tmp2;
+                    finance.Insert(once);
+                }
             }
             else {std::cout<<"Invalid\n";continue;}
         }

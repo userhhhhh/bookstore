@@ -5,9 +5,9 @@
 
 class User{
 public:
-    char UserID[33];
-    char password[33];
-    char username[33];
+    char UserID[33]={'\0'};//错误：这里要赋初值，不然所得的值会有问题
+    char password[33]={'\0'};
+    char username[33]={'\0'};
     int privilege = 0;
 public:
     User(std::string,std::string,std::string,int);
@@ -24,7 +24,7 @@ public:
     User login_user;//现在登录的user
     bool flag_log=false;
 public:
-    Usersystem();
+    Usersystem(std::string,std::string,std::string,std::string);
     ~Usersystem();
     void su(std::string,std::string);
     void logout();
@@ -33,12 +33,5 @@ public:
     void useradd(std::string,std::string,std::string,int);
     void delete_(std::string);
 };
-
-
-
-
-
-
-
 
 #endif

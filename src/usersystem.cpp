@@ -4,19 +4,36 @@
 #include <cstring>
 
 const int sizeofuser = sizeof(User);
-
+// std::string file_user_name;
+//     std::fstream file_user;
+//     BlockChain user_chain; //由ID找到索引
+//     std::vector<std::string> login_now;
+//     std::vector<int> login_now_select;//保存选中的书的索引
+//     User login_user;//现在登录的user
+//     bool flag_log=false;
 User::User(std::string str1,std::string str2,std::string str3,int num){
     std::copy(str1.begin(),str1.end(),UserID);
     std::copy(str2.begin(),str2.end(),password);
     std::copy(str3.begin(),str3.end(),username);
     privilege=num;
 }
-Usersystem::Usersystem(){
+Usersystem::Usersystem(std::string str,std::string str1,std::string str2,std::string str3)
+    :file_user_name(str),user_chain(str1,str2,str3){
     file_user.open(file_user_name);
     if (!file_user.good()) {
         file_user.open(file_user_name, std::ios::out);
         file_user.close();
         file_user.open(file_user_name);
+    }
+    file_user.seekp(0,std::ios::end);
+    int test_empty=file_user.tellp();
+    if(test_empty==0){
+        User owner("root","sjtu","owner",7);
+        file_user.seekp(0);
+        file_user.write(reinterpret_cast<char*>(&owner),sizeofuser);
+        Element element("root");
+        element.value=0;
+        user_chain.Insert(element);
     }
 }
 Usersystem::~Usersystem(){
@@ -24,7 +41,8 @@ Usersystem::~Usersystem(){
 }
 
 void Usersystem::su(std::string UserID_in,std::string passwd_in_){
-    char passwd_in[33];
+    //不确定：权限高于登录用户，且密码错了，怎么办？
+    char passwd_in[33]={'\0'};
     std::copy(passwd_in_.begin(),passwd_in_.end(),passwd_in);
     //下面v只有一个元素，并且该元素为user的索引
     std::vector<int> v;
@@ -54,8 +72,7 @@ void Usersystem::logout(){
         if(v.empty()) {std::cout<<"Invalid\n"; return;}
         file_user.seekg(v[0]);
         file_user.read(reinterpret_cast<char*>(&login_user),sizeofuser);
-    }
-    
+    } 
 }
 void Usersystem::register_(std::string UserID_in,std::string passwd_in,std::string username_in){
     std::vector<int> v;
@@ -70,6 +87,7 @@ void Usersystem::register_(std::string UserID_in,std::string passwd_in,std::stri
     user_chain.Insert(element);
 }
 void Usersystem::modify(std::string UserID_in,std::string NewPassword,std::string CurrentPassword=""){
+    //不确定：店主可不可以输错密码
     if(CurrentPassword=="" && login_user.privilege!=7){std::cout<<"Invalid\n";return;}
     std::vector<int> v;
     v = user_chain.Find(UserID_in);
@@ -77,7 +95,7 @@ void Usersystem::modify(std::string UserID_in,std::string NewPassword,std::strin
     file_user.seekg(v[0]);
     User tmp;
     file_user.read(reinterpret_cast<char*>(&tmp),sizeofuser);
-    char passwd_in[33];
+    char passwd_in[33]={'\0'};
     std::copy(CurrentPassword.begin(),CurrentPassword.end(),passwd_in);
     if(std::strcmp(tmp.password,passwd_in)==0){
         std::copy(CurrentPassword.begin(),CurrentPassword.end(),tmp.password);
@@ -87,6 +105,7 @@ void Usersystem::modify(std::string UserID_in,std::string NewPassword,std::strin
     else{std::cout<<"Invalid\n";}
 }
 void Usersystem::useradd(std::string UserID_in,std::string passwd_in,std::string username_in,int num){
+    if(num>login_user.privilege){std::cout<<"Invalid\n";return;}
     std::vector<int> v;
     v = user_chain.Find(UserID_in);
     if(!v.empty()){std::cout<<"Invalid\n";return;}
@@ -100,6 +119,9 @@ void Usersystem::useradd(std::string UserID_in,std::string passwd_in,std::string
     user_chain.Insert(element);
 }
 void Usersystem::delete_(std::string UserID_in){
+    char tmp[33]={'\0'};
+    std::copy(UserID_in.begin(),UserID_in.end(),tmp);
+    if(std::strcmp(tmp,login_user.UserID)==0) {std::cout<<"Invalid\n";return;}
     std::vector<int> v;
     v = user_chain.Find(UserID_in);
     if(v.empty()){std::cout<<"Invalid\n";return;}

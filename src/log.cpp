@@ -31,5 +31,6 @@ void Finance::Show(int count){
         if(once.flag==true) income+=once.money;
         if(once.flag==false) outcome+=once.money;
     }
-    std::cout<<"+ "<<income<<" - "<<outcome<<'\n';
+    std::cout<<"+ "<<std::fixed << std::setprecision(2) <<income<<
+            " - "<<std::fixed << std::setprecision(2) <<outcome<<'\n';
 }
