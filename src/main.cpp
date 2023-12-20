@@ -2,6 +2,7 @@
 #include"booksystem.h"
 #include"usersystem.h"
 #include"log.h"
+#include <vector>
 
 bool isValidFloat(std::string& str){
     std::istringstream iss1(str);
@@ -21,7 +22,6 @@ bool isValidInt(std::string& str){
     }
     return true;
 }
-
 int main(){
 
 //   freopen("/home/hqs123/bookstore/src/test/basic/testcase3.in","r",stdin);
@@ -109,6 +109,7 @@ int main(){
 
                 int pos=v[0].find("=");
                 if(pos==std::string::npos) {std::cout<<"Invalid\n";continue;}
+                if(pos==v[0].size()-1) {std::cout<<"Invalid\n";break;}
                 std::string s1=v[0].substr(0,pos);
                 std::string s2=v[0].substr(pos+1);
                 if(s1=="-ISBN"){booksystem.show_isbn(s2);}
@@ -147,6 +148,7 @@ int main(){
             for(int i=0;i<v.size();++i){           
                 int pos=v[i].find("=");
                 if(pos==std::string::npos) {std::cout<<"Invalid\n";flag=false;break;}
+                if(pos==v[i].size()-1) {std::cout<<"Invalid\n";flag=false;break;}
                 std::string s1=v[i].substr(0,pos);
                 std::string s2=v[i].substr(pos+1);
                 if(s1=="-ISBN"){
@@ -185,10 +187,63 @@ int main(){
                 std::copy(already_have[0].begin(),already_have[0].end(),exchange);
                 if(std::strcmp(tmp1.isbn,exchange)==0){std::cout<<"Invalid\n";continue;}
                 std::copy(already_have[0].begin(),already_have[0].end(),tmp1.isbn);
+                std::string str(tmp1.isbn,std::strlen(tmp1.isbn));
+                Element e(str);
+                e.value=tmp;
+                booksystem.isbn_chain.Delete(e);
+                for(int i=0;i<70;++i) {e.index[i]='\0';}
+                std::copy(already_have[0].begin(),already_have[0].end(),e.index);
+                booksystem.isbn_chain.Insert(e);
             }
-            if(already_have[1]!=""){std::copy(already_have[1].begin(),already_have[1].end(),tmp1.BookName);}
-            if(already_have[2]!=""){std::copy(already_have[2].begin(),already_have[2].end(),tmp1.Author);}
-            if(already_have[3]!=""){std::copy(already_have[3].begin(),already_have[3].end(),tmp1.Keyword);}
+            if(already_have[1]!=""){
+                std::copy(already_have[1].begin(),already_have[1].end(),tmp1.BookName);
+                std::string str(tmp1.BookName,std::strlen(tmp1.BookName));
+                std::vector<int> v1;
+                v1=booksystem.name_chain.Find(str);
+                Element e(str);
+                e.value=tmp;
+                if(!v1.empty()){//如果有，先删除
+                    booksystem.name_chain.Delete(e);
+                }
+                for(int i=0;i<70;++i) {e.index[i]='\0';}
+                std::copy(already_have[1].begin(),already_have[1].end(),e.index);
+                booksystem.name_chain.Insert(e);
+            }
+            if(already_have[2]!=""){
+                std::copy(already_have[2].begin(),already_have[2].end(),tmp1.Author);
+                std::string str(tmp1.Author,std::strlen(tmp1.Author));
+                std::vector<int> v1;
+                v1=booksystem.author_chain.Find(str);
+                Element e(str);
+                e.value=tmp;
+                if(!v1.empty()){//如果有，先删除
+                    booksystem.author_chain.Delete(e);
+                }
+                for(int i=0;i<70;++i) {e.index[i]='\0';}
+                std::copy(already_have[2].begin(),already_have[2].end(),e.index);
+                booksystem.author_chain.Insert(e);
+            }
+            if(already_have[3]!=""){
+                //不确定：keyword没实现(已写)
+                std::copy(already_have[3].begin(),already_have[3].end(),tmp1.Keyword);
+                std::string str(tmp1.Keyword,std::strlen(tmp1.Keyword));
+                std::vector<std::string> v1;
+                v1=booksystem.get_keyword(str);
+                for(int i=0;i<v1.size();++i){
+                    std::vector<int> v2;
+                    v2=booksystem.keyword_chain.Find(v1[i]);
+                    Element e(v1[i]);
+                    e.value=tmp;
+                    if(!v2.empty()){//如果有，先删除
+                        booksystem.keyword_chain.Delete(e);
+                    }
+                    for(int i=0;i<70;++i) {e.index[i]='\0';}
+                    std::copy(already_have[3].begin(),already_have[3].end(),e.index);
+                    booksystem.keyword_chain.Insert(e);
+                }
+                std::copy(already_have[3].begin(),already_have[3].end(),tmp1.Keyword);
+
+            }
             if(already_have[4]!=""){double num=std::stod(already_have[4]);tmp1.price=num;}
             booksystem.file_book.seekp(tmp);
             booksystem.file_book.write(reinterpret_cast<char*>(&tmp1),sizeof(Book));

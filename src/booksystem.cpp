@@ -3,10 +3,21 @@
 #include "usersystem.h"
 #include "log.h"
 #include <algorithm>
+#include <iterator>
 #include <string>
 
 const int sizeofbook=sizeof(Book);
 
+std::vector<std::string> get_keyword(std::string str){
+    std::vector<std::string> substrings;
+    std::istringstream iss(str);
+    std::string sub;
+    while(std::getline(iss, sub,'|')){
+        substrings.push_back(sub);
+    }
+    if(substrings.empty()){substrings.push_back(str);}
+    return substrings;
+}
 Booksystem::Booksystem(std::string str1,std::string str2,std::string str3,
                         std::string str4,std::string str5,std::string str6,
                         std::string str7,std::string str8,std::string str9,
@@ -95,9 +106,15 @@ void Booksystem::select(Usersystem& usersystem,std::string isbn_in){
     std::vector<int> v;
     v = isbn_chain.Find(isbn_in);//索引值
     if(v.size()==0) {
-        //不确定：怎么创建？
-
-
+        //不确定：怎么创建？（已写）
+        file_book.seekp(0,std::ios::end);
+        int pos=file_book.tellp();
+        Book b;
+        std::copy(isbn_in.begin(),isbn_in.end(),b.isbn);
+        file_book.write(reinterpret_cast<char*>(&b),sizeofbook);
+        Element e(isbn_in);
+        e.value=pos;
+        isbn_chain.Insert(e);
         return;
     }
     usersystem.login_now_select.pop_back();

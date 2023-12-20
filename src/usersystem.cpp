@@ -39,9 +39,8 @@ Usersystem::Usersystem(std::string str,std::string str1,std::string str2,std::st
 Usersystem::~Usersystem(){
     if (file_user.is_open()) file_user.close();
 }
-
 void Usersystem::su(std::string UserID_in,std::string passwd_in_){
-    //不确定：权限高于登录用户，且密码错了，怎么办？
+    //错误：权限高于登录用户，且密码错了，仍是错的
     char passwd_in[33]={'\0'};
     std::copy(passwd_in_.begin(),passwd_in_.end(),passwd_in);
     //下面v只有一个元素，并且该元素为user的索引
@@ -87,7 +86,7 @@ void Usersystem::register_(std::string UserID_in,std::string passwd_in,std::stri
     user_chain.Insert(element);
 }
 void Usersystem::modify(std::string UserID_in,std::string NewPassword,std::string CurrentPassword=""){
-    //不确定：店主可不可以输错密码
+    //错误：店主不可以输错密码
     if(CurrentPassword=="" && login_user.privilege!=7){std::cout<<"Invalid\n";return;}
     std::vector<int> v;
     v = user_chain.Find(UserID_in);
@@ -97,7 +96,8 @@ void Usersystem::modify(std::string UserID_in,std::string NewPassword,std::strin
     file_user.read(reinterpret_cast<char*>(&tmp),sizeofuser);
     char passwd_in[33]={'\0'};
     std::copy(CurrentPassword.begin(),CurrentPassword.end(),passwd_in);
-    if(std::strcmp(tmp.password,passwd_in)==0){
+    if(std::strcmp(tmp.password,passwd_in)==0||
+        (CurrentPassword=="" && login_user.privilege==7)){
         std::copy(CurrentPassword.begin(),CurrentPassword.end(),tmp.password);
         file_user.seekp(v[0]);
         file_user.write(reinterpret_cast<char*>(&tmp),sizeofuser);

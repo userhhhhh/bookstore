@@ -42,6 +42,7 @@ public:
     double buy(std::string,int);
     void select(Usersystem&,std::string);
     bool import(Usersystem&,int,double);
+    std::vector<std::string> get_keyword(std::string);
 
     // void modify_isbn(Usersystem&,std::string);
     // void modify_name(Usersystem&,std::string);
