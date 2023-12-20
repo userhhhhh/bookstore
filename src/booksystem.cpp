@@ -8,16 +8,16 @@
 
 const int sizeofbook=sizeof(Book);
 
-std::vector<std::string> get_keyword(std::string str){
-    std::vector<std::string> substrings;
-    std::istringstream iss(str);
-    std::string sub;
-    while(std::getline(iss, sub,'|')){
-        substrings.push_back(sub);
-    }
-    if(substrings.empty()){substrings.push_back(str);}
-    return substrings;
-}
+//std::vector<std::string> get_keyword(std::string str){
+//    std::vector<std::string> substrings;
+//    std::istringstream iss1(str);
+//    std::string sub;
+//    while(std::getline(iss1, sub,'|')){
+//        substrings.push_back(sub);
+//    }
+//    if(substrings.empty()){substrings.push_back(str);}
+//    return substrings;
+//}
 Booksystem::Booksystem(std::string str1,std::string str2,std::string str3,
                         std::string str4,std::string str5,std::string str6,
                         std::string str7,std::string str8,std::string str9,
@@ -54,7 +54,8 @@ void Booksystem::print_book(int pos){
     Book book;  //表示在pos处的book的全部信息
     file_book.read(reinterpret_cast<char*>(&book),sizeofbook);
     std::cout<<book.isbn<<'\t'<<book.BookName<<'\t'<<book.Author
-        <<'\t'<<book.Keyword<<'\t'<<book.price<<'\t'<<book.rest<<'\n';
+        <<'\t'<<book.Keyword<<'\t'<<std::fixed << std::setprecision(2)<<book.price<<'\t'<<book.rest<<'\n';
+    //错误：保留两位数字
 }
 void Booksystem::show_isbn(std::string isbn_in){
     std::vector<int> v;
@@ -99,7 +100,7 @@ double Booksystem::buy(std::string isbn_in,int Quantity){
     book.rest-=Quantity;
     file_book.seekp(v[0]);
     file_book.write(reinterpret_cast<char*>(&book),sizeofbook);
-    std::cout<< Quantity * book.price <<'\n';
+    std::cout<< std::fixed << std::setprecision(2) << Quantity * book.price <<'\n';
     return Quantity * book.price;
 }
 void Booksystem::select(Usersystem& usersystem,std::string isbn_in){
@@ -115,7 +116,10 @@ void Booksystem::select(Usersystem& usersystem,std::string isbn_in){
         Element e(isbn_in);
         e.value=pos;
         isbn_chain.Insert(e);
+        usersystem.login_now_select.pop_back();
+        usersystem.login_now_select.push_back(pos);
         return;
+        //错误：这里要单独处理login_now_select
     }
     usersystem.login_now_select.pop_back();
     usersystem.login_now_select.push_back(v[0]);

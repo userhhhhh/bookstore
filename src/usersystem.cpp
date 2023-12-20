@@ -98,14 +98,14 @@ void Usersystem::modify(std::string UserID_in,std::string NewPassword,std::strin
     std::copy(CurrentPassword.begin(),CurrentPassword.end(),passwd_in);
     if(std::strcmp(tmp.password,passwd_in)==0||
         (CurrentPassword=="" && login_user.privilege==7)){
-        std::copy(CurrentPassword.begin(),CurrentPassword.end(),tmp.password);
+        std::copy(NewPassword.begin(),NewPassword.end(),tmp.password);
         file_user.seekp(v[0]);
         file_user.write(reinterpret_cast<char*>(&tmp),sizeofuser);
     }
     else{std::cout<<"Invalid\n";}
 }
 void Usersystem::useradd(std::string UserID_in,std::string passwd_in,std::string username_in,int num){
-    if(num>login_user.privilege){std::cout<<"Invalid\n";return;}
+    if(num>=login_user.privilege){std::cout<<"Invalid\n";return;}
     std::vector<int> v;
     v = user_chain.Find(UserID_in);
     if(!v.empty()){std::cout<<"Invalid\n";return;}
