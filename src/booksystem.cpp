@@ -83,8 +83,17 @@ void Booksystem::show_keyword(std::string keyword_in){
     std::vector<int> v;
     v = keyword_chain.Find(keyword_in);
     if(v.empty()) {std::cout<<'\n'; return;}
+    std::vector<Book> b;
     for(int i=0;i<v.size();++i){
-        print_book(v[i]);
+        file_book.seekg(v[i]);
+        Book book;  //表示在pos处的book的全部信息
+        file_book.read(reinterpret_cast<char*>(&book),sizeofbook);
+        b.push_back(book);
+    }
+    std::sort(b.begin(),b.end());
+    for(int i=0;i<v.size();++i){
+        std::cout<<b[i].isbn<<'\t'<<b[i].BookName<<'\t'<<b[i].Author
+                 <<'\t'<<b[i].Keyword<<'\t'<<std::fixed << std::setprecision(2)<<b[i].price<<'\t'<<b[i].rest<<'\n';
     }
 }
 //购买指的是从存货中减少
