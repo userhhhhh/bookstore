@@ -34,8 +34,8 @@ std::vector<std::string> get_keyword(std::string str){
 }
 int main(){
 
-//   freopen("/home/hqs123/bookstore/src/test/basic/testcase8/11.in","r",stdin);
-//   freopen("0.out","w",stdout);
+   freopen("/home/hqs123/bookstore/src/test/advanced/testcase1/1.in","r",stdin);
+   freopen("0.out","w",stdout);
 
     Booksystem booksystem("isbn_data","isbn_index","isbn_tail",
                         "name_data","name_index","name_tail",
@@ -48,7 +48,7 @@ int main(){
     int num_count=1;
     while(std::getline(std::cin,input_string)){
 //        std::cout<<num_count;
-//        if(num_count==7){
+//        if(num_count==85){
 //            int aaa=19;
 //        }
 //        num_count++;
@@ -79,7 +79,7 @@ int main(){
             else {std::cout<<"Invalid"<<std::endl;continue;}
         }
         else if(command=="passwd"){
-            //错误：要求登录状态下才能进行这个操作，并且注意操作会有privilege限制
+            //错误：要求登录状态下才能进行这个操作
             if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
             if(v.size()==3) {usersystem.modify(v[0],v[2],v[1]);}
             else if(v.size()==2) {usersystem.modify(v[0],v[1],"");}
@@ -278,6 +278,7 @@ int main(){
                 e.value=tmp;
                 booksystem.isbn_chain.Delete(e);
                 //错误：顺序不能放反了
+                for(int i=0;i<33;i++) {tmp1.isbn[i]='\0';}
                 std::copy(already_have[0].begin(),already_have[0].end(),tmp1.isbn);
                 for(int i=0;i<70;++i) {e.index[i]='\0';}
                 std::copy(already_have[0].begin(),already_have[0].end(),e.index);
@@ -295,6 +296,7 @@ int main(){
                 for(int i=0;i<70;++i) {e.index[i]='\0';}
                 std::copy(already_have[1].begin(),already_have[1].end(),e.index);
                 booksystem.name_chain.Insert(e);
+                for(int i=0;i<63;++i) {tmp1.BookName[i]='\0';}
                 std::copy(already_have[1].begin(),already_have[1].end(),tmp1.BookName);
             }
             if(already_have[2]!=""){
@@ -309,6 +311,7 @@ int main(){
                 for(int i=0;i<70;++i) {e.index[i]='\0';}
                 std::copy(already_have[2].begin(),already_have[2].end(),e.index);
                 booksystem.author_chain.Insert(e);
+                for(int i=0;i<63;++i) {tmp1.Author[i]='\0';}
                 std::copy(already_have[2].begin(),already_have[2].end(),tmp1.Author);
             }
             if(already_have[3]!=""){
@@ -337,6 +340,7 @@ int main(){
                     std::copy(v1[i].begin(),v1[i].end(),e.index);
                     booksystem.keyword_chain.Insert(e);
                 }
+                for(int i=0;i<63;++i) {tmp1.Keyword[i]='\0';}
                 std::copy(already_have[3].begin(),already_have[3].end(),tmp1.Keyword);
             }
             if(already_have[4]!=""){

@@ -87,6 +87,9 @@ void Usersystem::register_(std::string UserID_in,std::string passwd_in,std::stri
 }
 void Usersystem::modify(std::string UserID_in,std::string NewPassword,std::string CurrentPassword=""){
     //错误：店主不可以输错密码
+//    if(UserID_in=="root" && NewPassword=="PKX4ga2"){
+//        int bbb=1;
+//    }
     if(CurrentPassword=="" && login_user.privilege!=7){std::cout<<"Invalid\n";return;}
     std::vector<int> v;
     v = user_chain.Find(UserID_in);
@@ -98,6 +101,10 @@ void Usersystem::modify(std::string UserID_in,std::string NewPassword,std::strin
     std::copy(CurrentPassword.begin(),CurrentPassword.end(),passwd_in);
     if(std::strcmp(tmp.password,passwd_in)==0||
         (CurrentPassword=="" && login_user.privilege==7)){
+        //错误：先要将tmp.password置空
+        for(int i=0;i<33;i++){
+            tmp.password[i]='\0';
+        }
         std::copy(NewPassword.begin(),NewPassword.end(),tmp.password);
         file_user.seekp(v[0]);
         file_user.write(reinterpret_cast<char*>(&tmp),sizeofuser);
