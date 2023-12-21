@@ -34,7 +34,7 @@ std::vector<std::string> get_keyword(std::string str){
 }
 int main(){
 
-//   freopen("/home/hqs123/bookstore/src/test/advanced/testcase1/1.in","r",stdin);
+//   freopen("/home/hqs123/bookstore/src/test/complex/testcase3/1.in","r",stdin);
 //   freopen("0.out","w",stdout);
 
     Booksystem booksystem("isbn_data","isbn_index","isbn_tail",
@@ -48,7 +48,7 @@ int main(){
     int num_count=1;
     while(std::getline(std::cin,input_string)){
 //        std::cout<<num_count;
-//        if(num_count==85){
+//        if(num_count==259){
 //            int aaa=19;
 //        }
 //        num_count++;
@@ -103,10 +103,12 @@ int main(){
         else if(command=="show"){//两种情况
             if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
             if(v.size()==2 && v[0]=="finance" && isValidInt(v[1])==true){
+                if(usersystem.login_user.privilege<7){std::cout<<"Invalid"<<std::endl;continue;}
                 int tmp=std::stoi(v[1]);
                 finance.Show(tmp);
             }
             else if(v.size()==1 && v[0]=="finance"){
+                if(usersystem.login_user.privilege<7){std::cout<<"Invalid"<<std::endl;continue;}
                 finance.file_finance.seekp(0,std::ios::end);
                 int index=finance.file_finance.tellp();
                 int count=index/sizeof(Once);
