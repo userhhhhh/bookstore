@@ -34,7 +34,7 @@ std::vector<std::string> get_keyword(std::string str){
 }
 int main(){
 
-//   freopen("/home/hqs123/bookstore/src/test/robust/testcase1.in","r",stdin);
+//   freopen("/home/hqs123/bookstore/src/test/robust/testcase4.in","r",stdin);
 //   freopen("0.out","w",stdout);
 
     Booksystem booksystem("isbn_data","isbn_index","isbn_tail",
@@ -322,6 +322,16 @@ int main(){
                 //错误：改之前是 v3，是从 tmp1.Keyword里面读出来的
                 std::vector<std::string> v1;
                 v1=get_keyword(already_have[3]);
+                bool flag=true;
+                for(int i=0;i<v1.size()-1;++i){
+                    for(int j=i+1;j<v1.size();++j){
+                        if(v1[i]==v1[j]){
+                            flag= false;
+                            break;
+                        }
+                    }
+                }
+                if(!flag) {std::cout<<"Invalid"<<std::endl;continue;}
                 std::string str(tmp1.Keyword,std::strlen(tmp1.Keyword));
                 std::vector<std::string> v3;
                 v3=get_keyword(str);
