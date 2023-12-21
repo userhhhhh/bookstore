@@ -34,8 +34,8 @@ std::vector<std::string> get_keyword(std::string str){
 }
 int main(){
 
-   freopen("/home/hqs123/bookstore/src/test/basic/testcase5.in","r",stdin);
-   freopen("0.out","w",stdout);
+//   freopen("/home/hqs123/bookstore/src/test/basic/testcase8/4.in","r",stdin);
+//   freopen("0.out","w",stdout);
 
     Booksystem booksystem("isbn_data","isbn_index","isbn_tail",
                         "name_data","name_index","name_tail",
@@ -47,11 +47,11 @@ int main(){
     std::string input_string;
     int num_count=1;
     while(std::getline(std::cin,input_string)){
-        std::cout<<num_count;
-        if(num_count==36){
-            int aaa=19;
-        }
-        num_count++;
+//        std::cout<<num_count;
+//        if(num_count==7){
+//            int aaa=19;
+//        }
+//        num_count++;
         bool result = std::all_of(input_string.begin(), input_string.end(), [](char c) { return c == ' '; });
         if(result) continue;//先处理一下空串
         std::istringstream iss(input_string);
@@ -79,7 +79,7 @@ int main(){
             else {std::cout<<"Invalid"<<std::endl;continue;}
         }
         else if(command=="passwd"){
-            //错误：要求登录状态下才能进行这个操作
+            //错误：要求登录状态下才能进行这个操作，并且注意操作会有privilege限制
             if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
             if(v.size()==3) {usersystem.modify(v[0],v[2],v[1]);}
             else if(v.size()==2) {usersystem.modify(v[0],v[1],"");}
@@ -87,6 +87,7 @@ int main(){
         }
         else if(command=="useradd"){
             if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
+            if(usersystem.login_user.privilege<3){std::cout<<"Invalid"<<std::endl;continue;}
             if(v.size()==4 && (v[2]=="0"||v[2]=="1"||v[2]=="3"||v[2]=="7")){
                 int tmp=std::stoi(v[2]);
                 usersystem.useradd(v[0],v[1],v[3],tmp);
@@ -95,10 +96,12 @@ int main(){
         }
         else if(command=="delete"){
             if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
+            if(usersystem.login_user.privilege<7){std::cout<<"Invalid"<<std::endl;continue;}
             if(v.size()==1){usersystem.delete_(v[0]);}
             else {std::cout<<"Invalid"<<std::endl;continue;}
         }
         else if(command=="show"){//两种情况
+            if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
             if(v.size()==2 && v[0]=="finance" && isValidInt(v[1])==true){
                 int tmp=std::stoi(v[1]);
                 finance.Show(tmp);
@@ -110,18 +113,19 @@ int main(){
                 finance.Show(count);
             }
             else if(v.size()==0){
-                std::fstream inputFile("book");
                 std::vector<Book> books;
-                while(inputFile.peek() != EOF){
+                // std::fstream inputFile("book");
+                // 错误：这里不能再开一个流，不然它的更新会延迟，直接用原来的 file_book即可
+                booksystem.file_book.seekg(0);
+                while(booksystem.file_book.peek()!=EOF){
                     Book book;
-                    inputFile.read(reinterpret_cast<char*>(&book),sizeof(Book));
+                    booksystem.file_book.read(reinterpret_cast<char*>(&book),sizeof(Book));
                     books.push_back(book);
                 }
-                inputFile.close();
                 std::sort(books.begin(), books.end());
                 for(int i=0;i<books.size();++i){
                     std::cout<<books[i].isbn<<'\t'<<books[i].BookName<<'\t'<<books[i].Author
-                    <<'\t'<<books[i].Keyword<<'\t'<<books[i].price<<'\t'<<books[i].rest<<std::endl;
+                    <<'\t'<<books[i].Keyword<<'\t'<<std::fixed << std::setprecision(2)<<books[i].price<<'\t'<<books[i].rest<<std::endl;
                 }
             }
             else if(v.size()==1 && v[0]!="finance"){
@@ -172,6 +176,7 @@ int main(){
             else {std::cout<<"Invalid"<<std::endl;continue;}
         }
         else if(command=="buy"){
+            if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
             if(v.size()==2){
                 if(!isValidInt(v[1])) {std::cout<<"Invalid"<<std::endl;continue;}
                 int tmp=std::stoi(v[1]);
@@ -186,10 +191,14 @@ int main(){
             else {std::cout<<"Invalid"<<std::endl;continue;}
         }
         else if(command=="select"){
+            if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
+            if(usersystem.login_user.privilege<3){std::cout<<"Invalid"<<std::endl;continue;}
             if(v.size()==1){booksystem.select(usersystem,v[0]);}
             else {std::cout<<"Invalid"<<std::endl;continue;}
         }
         else if(command=="modify"){
+            if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
+            if(usersystem.login_user.privilege<3){std::cout<<"Invalid"<<std::endl;continue;}
             // 不确定：附加参数内容为空则操作失败
             // 不确定：[keyword] 包含重复信息段则操作失败
 
@@ -258,8 +267,11 @@ int main(){
             booksystem.file_book.seekg(tmp);
             booksystem.file_book.read(reinterpret_cast<char*>(&tmp1),sizeof(Book));
             if(already_have[0]!=""){
+                //错误：将原来的isbn改成exchange，但exchange不能与其他isbn重复
                 char exchange[33]={'\0'};
                 std::copy(already_have[0].begin(),already_have[0].end(),exchange);
+                std::vector<int> v1=booksystem.isbn_chain.Find(already_have[0]);
+                if(!v1.empty()) {std::cout<<"Invalid"<<std::endl;continue;}
                 if(std::strcmp(tmp1.isbn,exchange)==0){std::cout<<"Invalid"<<std::endl;continue;}
                 std::string str(tmp1.isbn,std::strlen(tmp1.isbn));
                 Element e(str);
@@ -338,6 +350,8 @@ int main(){
             booksystem.file_book.write(reinterpret_cast<char*>(&tmp1),sizeof(Book));
         }
         else if(command=="import"){
+            if(usersystem.login_now.empty()){std::cout<<"Invalid"<<std::endl;continue;}
+            if(usersystem.login_user.privilege<3){std::cout<<"Invalid"<<std::endl;continue;}
             if(v.size()==2 && isValidInt(v[0]) && isValidFloat(v[1])){
                 int tmp1 = std::stoi(v[0]);
                 double tmp2 = std::stod(v[1]);
@@ -357,7 +371,12 @@ int main(){
             
         }
         else if(command=="quit" || command=="exit"){
-            if(v.size()==0){exit(0);}  //不确定
+            if(v.size()==0){
+                //错误：这里一定要把文件关掉，不然会出问题
+                if(booksystem.file_book.is_open()) booksystem.file_book.close();
+                if(usersystem.file_user.is_open()) usersystem.file_user.close();
+                exit(0);
+            }  //不确定
             else {std::cout<<"Invalid"<<std::endl;continue;}
         }
         else{
