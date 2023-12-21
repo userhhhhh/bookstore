@@ -34,8 +34,8 @@ std::vector<std::string> get_keyword(std::string str){
 }
 int main(){
 
-   freopen("/home/hqs123/bookstore/src/test/advanced/testcase1/1.in","r",stdin);
-   freopen("0.out","w",stdout);
+//   freopen("/home/hqs123/bookstore/src/test/advanced/testcase1/1.in","r",stdin);
+//   freopen("0.out","w",stdout);
 
     Booksystem booksystem("isbn_data","isbn_index","isbn_tail",
                         "name_data","name_index","name_tail",
