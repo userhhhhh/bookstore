@@ -128,6 +128,14 @@ void Usersystem::useradd(std::string UserID_in,std::string passwd_in,std::string
 void Usersystem::delete_(std::string UserID_in){
     char tmp[33]={'\0'};
     std::copy(UserID_in.begin(),UserID_in.end(),tmp);
+    bool flag=true;
+    for(int i=0;i<login_now.size();++i){
+        if(login_now[i]==UserID_in){
+            flag=false;
+            break;
+        }
+    }
+    if(!flag) {std::cout<<"Invalid\n";return;}
     if(std::strcmp(tmp,login_user.UserID)==0) {std::cout<<"Invalid\n";return;}
     std::vector<int> v;
     v = user_chain.Find(UserID_in);

@@ -34,7 +34,7 @@ std::vector<std::string> get_keyword(std::string str){
 }
 int main(){
 
-//   freopen("/home/hqs123/bookstore/src/test/complex/testcase3/1.in","r",stdin);
+//   freopen("/home/hqs123/bookstore/src/test/robust/testcase1.in","r",stdin);
 //   freopen("0.out","w",stdout);
 
     Booksystem booksystem("isbn_data","isbn_index","isbn_tail",
@@ -48,7 +48,7 @@ int main(){
     int num_count=1;
     while(std::getline(std::cin,input_string)){
 //        std::cout<<num_count;
-//        if(num_count==259){
+//        if(num_count==10){
 //            int aaa=19;
 //        }
 //        num_count++;
