@@ -67,22 +67,41 @@ void Booksystem::show_name(std::string name_in){
     std::vector<int> v;
     v = name_chain.Find(name_in);
     if(v.empty()) {std::cout<<'\n'; return;}
+    std::vector<Book> b;
     for(int i=0;i<v.size();++i){
-        print_book(v[i]);
+        file_book.seekg(v[i]);
+        Book book;
+        file_book.read(reinterpret_cast<char*>(&book),sizeofbook);
+        b.push_back(book);
+    }
+    std::sort(b.begin(),b.end());
+    for(int i=0;i<v.size();++i){
+        std::cout<<b[i].isbn<<'\t'<<b[i].BookName<<'\t'<<b[i].Author
+                 <<'\t'<<b[i].Keyword<<'\t'<<std::fixed << std::setprecision(2)<<b[i].price<<'\t'<<b[i].rest<<'\n';
     }
 }
 void Booksystem::show_author(std::string author_in){
     std::vector<int> v;
     v = author_chain.Find(author_in);
     if(v.empty()) {std::cout<<'\n'; return;}
+    std::vector<Book> b;
     for(int i=0;i<v.size();++i){
-        print_book(v[i]);
+        file_book.seekg(v[i]);
+        Book book;
+        file_book.read(reinterpret_cast<char*>(&book),sizeofbook);
+        b.push_back(book);
+    }
+    std::sort(b.begin(),b.end());
+    for(int i=0;i<v.size();++i){
+        std::cout<<b[i].isbn<<'\t'<<b[i].BookName<<'\t'<<b[i].Author
+                 <<'\t'<<b[i].Keyword<<'\t'<<std::fixed << std::setprecision(2)<<b[i].price<<'\t'<<b[i].rest<<'\n';
     }
 }
 void Booksystem::show_keyword(std::string keyword_in){
     std::vector<int> v;
     v = keyword_chain.Find(keyword_in);
     if(v.empty()) {std::cout<<'\n'; return;}
+    //错误：要对输出排序
     std::vector<Book> b;
     for(int i=0;i<v.size();++i){
         file_book.seekg(v[i]);
