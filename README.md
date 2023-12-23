@@ -21,7 +21,7 @@
 - merge：并块，防止块太小，超过限度就并成一块
 - borrow：借块，防止无法并块，就是并块以后超出限制，那么就借块，从前面或者后面借一点元素
 
-'''cpp
+```cpp
 #ifndef CODE_BLOCKCHAIN_H
 #define CODE_BLOCKCHAIN_H
 #include <bits/stdc++.h>
@@ -48,6 +48,7 @@ public:
 
     NODE() = default;
 };
+
 class NODE_INDEX {
 public:
     Element low;
@@ -57,6 +58,7 @@ public:
     int last_index=-1; 
     int pos_index;
 };
+
 //对块状链表操作的过程
 class BlockChain {
 private:
@@ -83,9 +85,8 @@ public:
     void borrow(NODE &,NODE_INDEX &,NODE &,NODE_INDEX &);
     void remove(NODE &);
 };
-
 #endif //CODE_BLOCKCHAIN_H
-'''
+```
 
 ## booksystem
 
@@ -98,7 +99,7 @@ public:
 - 上面分别建立了从isbn、name、author、keyword的块状链表
 - 实际存储图书的所有信息的是file_book对应的文件
 
-'''cpp
+```cpp
 #ifndef CODE_BOOKSYSTEM_H
 #define CODE_BOOKSYSTEM_H
 #include"blockchain.h"
@@ -147,7 +148,7 @@ public:
 
 
 #endif //CODE_BOOKSYSTEM_H
-'''
+```
   
 
 ## usersyetem
@@ -159,7 +160,7 @@ public:
 - std::vector login_now_select：保存选中的书的索引，与上面的vector一一对应
 - User login_user：现在登录的user
 
-'''cpp
+``` cpp
 #ifndef CODE_USERSYSTEM_H
 #define CODE_USERSYSTEM_H
 #include "blockchain.h"
@@ -197,7 +198,7 @@ public:
 };
 
 #endif
-'''
+```
 
 ## log
 
@@ -206,7 +207,7 @@ public:
 - Insert：插入元素
 - Show：展示元素
 
-'''cpp
+```cpp
 #ifndef CODE_LOG_H
 #define CODE_LOG_H
 
@@ -233,4 +234,4 @@ public:
 };
 
 #endif
-'''
+```
